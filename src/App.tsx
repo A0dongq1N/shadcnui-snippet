@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   HomeIcon, 
   SettingsIcon, 
@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 
 // 导航项配置
 const navigationItems = [
@@ -54,9 +57,40 @@ const navigationItems = [
   },
 ]
 
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+]
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "#2563eb",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "#60a5fa",
+  },
+} satisfies ChartConfig
+
 function App() {
   const [activeItem, setActiveItem] = useState("#home")
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  // 自动刷新时间
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000) // 每秒更新一次
+
+    // 清理定时器
+    return () => clearInterval(timer)
+  }, [])
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)
@@ -100,6 +134,25 @@ function App() {
                   <p className="text-xs text-muted-foreground">+5% 比上周</p>
                 </CardContent>
               </Card>
+              <Card>
+              <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <BarChart accessibilityLayer data={chartData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => value.slice(0, 3)}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+                  <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+              </Card>
+
             </div>
           </div>
         )
@@ -116,6 +169,7 @@ function App() {
                   </CardHeader>
                   <CardContent>
                     <p>这是一个示例项目的内容...</p>
+                    <a href="https://www.baidu.com" target="_blank" rel="noopener noreferrer">项目地址</a>
                   </CardContent>
                 </Card>
               ))}
@@ -143,6 +197,10 @@ function App() {
                   <div className="flex items-center space-x-2">
                     <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                     <span>代码审查 (16:30)</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                    <span>当前时间：{currentTime.toLocaleTimeString()}</span>
                   </div>
                 </div>
               </CardContent>
